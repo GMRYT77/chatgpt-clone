@@ -64,7 +64,7 @@ const page = ({ params: { id } }) => {
         <div className="w-full h-full flex flex-col flex-1 relative overflow-y-auto ">
           <div
             onClick={openMenu}
-            className="w-full sticky top-0 left-0 px-4 py-2 items-center flex justify-between bg-[#212121]"
+            className="w-full sticky top-0 left-0 px-4 py-2 items-center flex justify-between bg-[#212121] z-30"
           >
             <button className="w-5 h-6 md:hidden flex flex-col justify-evenly">
               <span className="w-5 h-0.5 rounded-full bg-gray-300"></span>

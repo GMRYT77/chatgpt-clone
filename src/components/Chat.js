@@ -27,7 +27,10 @@ const Chat = ({ chatId, promptOutput }) => {
   );
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   };
 
   useEffect(() => {
@@ -169,7 +172,8 @@ const Chat = ({ chatId, promptOutput }) => {
       </div>
     </div>
   ) : (
-    <div className="relative flex-1 w-full px-4 overflow-y-auto scroll-smooth">
+    <div className=" flex-1 w-full px-4">
+      <div className="" id="REF"></div>
       <div className="w-full max-w-screen-md mx-auto relative flex flex-col gap-10 pb-20 pt-6">
         {messages?.docs?.map((e) => {
           if (e?.data().user.id) {
@@ -186,6 +190,15 @@ const Chat = ({ chatId, promptOutput }) => {
             return <InputMessage e={e} />;
           }
         })}
+        {/* <button
+          onClick={() => {
+            document
+              .getElementById("REF")
+              .scrollIntoView({ behavior: "smooth", block: "start" });
+          }}
+        >
+          click
+        </button> */}
       </div>
     </div>
   );
