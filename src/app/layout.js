@@ -6,6 +6,7 @@ import { getServerSession } from "next-auth";
 import Login from "@/components/Login";
 import { authOptions } from "@/lib/authOptions";
 import ClientProvider from "@/components/ClientProvider";
+import { SidebarWrapper } from "@/components/SidebarContext";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,10 +24,12 @@ export default async function RootLayout({ children }) {
           {!session ? (
             <Login />
           ) : (
-            <div className="relative flex w-full">
-              <Sidebar />
-              <ClientProvider />
-              <div className="w-full flex-1 transition">{children}</div>
+            <div className="relative flex w-full h-[100dvh] overflow-hidden">
+              <SidebarWrapper>
+                <Sidebar />
+                <ClientProvider />
+                <div className="w-full flex-1 transition">{children}</div>
+              </SidebarWrapper>
             </div>
           )}
         </SessionProvider>

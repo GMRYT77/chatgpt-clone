@@ -58,4 +58,16 @@
   body {
     @apply bg-background text-foreground;
   }
+  .markdown ul li {
+    @apply list-disc;
+  }
+  .markdown ol li {
+    @apply list-decimal;
+  }
+  .markdown p li {
+    @apply text-lg;
+  }
+  .sb {
+    @apply scrollbar scrollbar-track-[#424242] scrollbar-thumb-[#686868] hover:scrollbar-thumb-[#797979];
+  }
 }

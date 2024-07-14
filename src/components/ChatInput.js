@@ -29,7 +29,7 @@ const useChatInput = ({ chatId }) => {
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = "auto"; // Reset height
-      const maxHeight = 4 * parseFloat(getComputedStyle(textarea).lineHeight);
+      const maxHeight = 6 * parseFloat(getComputedStyle(textarea).lineHeight);
       textarea.style.height = `${Math.min(textarea.scrollHeight, maxHeight)}px`; // Set new height up to 4 rows
       textarea.style.overflowY =
         textarea.scrollHeight > maxHeight ? "auto" : "hidden"; // Show scrollbar if content exceeds maxHeight
@@ -226,21 +226,15 @@ const useChatInput = ({ chatId }) => {
                 e.target.addEventListener("keypress", (f) => {
                   if (f.key === "Enter" && !f.shiftKey) {
                     f.preventDefault();
-                    return;
+                    return false;
                   }
                 });
               }}
               rows="1"
               id="CHAT"
               placeholder="Message ChatGPT"
-              className="w-full rounded resize-none overflow-hidden bg-transparent outline-none"
+              className="w-full rounded resize-none overflow-hidden bg-transparent outline-none sb"
               style={{ lineHeight: "1.5" }} // Adjust as per your line-height in Tailwind CSS
-            />
-            <input
-              type="text"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              className="hidden"
             />
           </div>
           <button
@@ -251,7 +245,7 @@ const useChatInput = ({ chatId }) => {
             <FaArrowUp />
           </button>
         </form>
-        <div className="text-neutral-400 text-xs relative w-full text-center bg-[#212121] pt-2">
+        <div className="text-neutral-400 text-xs relative w-full text-center bg-[#212121] py-2">
           ChatGPT can make mistakes. Check important info.
           <button className="absolute top-1/2 right-0 -translate-y-1/2 text-[1rem] ">
             <BsQuestionCircle />
