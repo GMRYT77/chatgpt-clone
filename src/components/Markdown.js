@@ -1,13 +1,5 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { MdOutlineContentCopy } from "react-icons/md";
-import {
-  a11yDark,
-  coldarkDark,
-  duotoneDark,
-  materialDark,
-} from "react-syntax-highlighter/dist/cjs/styles/prism";
 import CodeBlock from "./CodeBlock";
 
 export default function Markdown({ markdown }) {
@@ -62,7 +54,7 @@ export default function Markdown({ markdown }) {
             />
           ) : (
             <code
-              className="px-2 py-1 rounded-sm bg-[#2f2f2f] text-sm"
+              className="px-2 py-1 rounded-sm bg-[#2f2f2f] text-sm font-mono"
               {...props}
             >
               {children}

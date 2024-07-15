@@ -16,13 +16,13 @@ import toast from "react-hot-toast";
 import { queryGemini } from "@/lib/gemini";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import moment from "moment";
+import { MdOutlineArrowUpward } from "react-icons/md";
 var randomstring = require("randomstring");
 
 const useChatInput = ({ chatId }) => {
   const { data: session } = useSession();
   const [prompt, setPrompt] = useState("");
   const [output, setOutput] = useState("");
-  const [msgId, setMsgId] = useState("");
   const textareaRef = useRef(null);
 
   useEffect(() => {
@@ -212,7 +212,7 @@ const useChatInput = ({ chatId }) => {
     prompt,
     promptOutput: output,
     render: (
-      <div className="w-full px-4 flex flex-col items-center ">
+      <div className="w-full px-4 flex flex-col items-center sticky z-50 bottom-0 left-0">
         <form
           onSubmit={sendMessage}
           className="w-full max-w-screen-md mx-auto relative rounded-[24px] bg-[#2f2f2f] flex items-end gap-2 pl-4 pr-2 py-2"
@@ -223,12 +223,13 @@ const useChatInput = ({ chatId }) => {
               value={prompt}
               onChange={(e) => {
                 setPrompt(e.target.value);
-                e.target.addEventListener("keypress", (f) => {
-                  if (f.key === "Enter" && !f.shiftKey) {
-                    f.preventDefault();
-                    return false;
-                  }
-                });
+              }}
+              onKeyDown={(f) => {
+                if (f.key === "Enter" && !f.shiftKey) {
+                  f.preventDefault();
+                  sendMessage(f);
+                  return false;
+                }
               }}
               rows="1"
               id="CHAT"
@@ -242,7 +243,21 @@ const useChatInput = ({ chatId }) => {
             disabled={!prompt || !session}
             className=" disabled:bg-gray-500 disabled:cursor-not-allowed disabled:text-neutral-700 w-8 h-8 rounded-full bg-neutral-300 hover:bg-gray-400 text-neutral-900  flex items-center justify-center text-lg"
           >
-            <FaArrowUp />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="32"
+              height="32"
+              fill="none"
+              viewBox="0 0 32 32"
+              class="icon-2xl"
+            >
+              <path
+                fill="currentColor"
+                fill-rule="evenodd"
+                d="M15.192 8.906a1.143 1.143 0 0 1 1.616 0l5.143 5.143a1.143 1.143 0 0 1-1.616 1.616l-3.192-3.192v9.813a1.143 1.143 0 0 1-2.286 0v-9.813l-3.192 3.192a1.143 1.143 0 1 1-1.616-1.616z"
+                clip-rule="evenodd"
+              ></path>
+            </svg>
           </button>
         </form>
         <div className="text-neutral-400 text-xs relative w-full text-center bg-[#212121] py-2">

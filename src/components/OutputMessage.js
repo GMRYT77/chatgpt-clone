@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Markdown from "./Markdown";
 
-const OutputMessage = ({ e, promptOutput }) => {
+const OutputMessage = ({ e, promptOutput, endRef }) => {
   const [output, setOutput] = useState("");
   useEffect(() => {
     setOutput((e) => e + promptOutput);
@@ -10,7 +10,7 @@ const OutputMessage = ({ e, promptOutput }) => {
   return (
     <div
       key={e?.data().user.id}
-      className="w-full relative mb-4 text-[.925rem] text-gray-100"
+      className="w-full relative mb-14 text-[.925rem] text-gray-100"
     >
       <div className="flex w-full max-w-[90%] gap-6 relative">
         <div className="w-8 h-8 min-w-8 flex items-center justify-center ring-[.4px] ring-gray-300 rounded-full">
@@ -118,10 +118,16 @@ const OutputMessage = ({ e, promptOutput }) => {
               </button>
             </div>
           ) : (
-            <div className="">Load</div>
+            <div className="flex space-x-1 justify-center items-center w-fit pt-3">
+              <span className="sr-only">Loading...</span>
+              <div className="h-2 w-2 bg-[#686868] rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+              <div className="h-2 w-2 bg-[#686868] rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+              <div className="h-2 w-2 bg-[#686868] rounded-full animate-bounce"></div>
+            </div>
           )}
         </div>
       </div>
+      {/* <div ref={endRef} /> */}
     </div>
   );
 };

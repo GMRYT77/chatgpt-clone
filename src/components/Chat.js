@@ -1,14 +1,16 @@
 "use client";
 import { collection, orderBy, query } from "firebase/firestore";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { db } from "../../firebase";
 import { useSession } from "next-auth/react";
 import OutputMessage from "./OutputMessage";
 import InputMessage from "./InputMessage";
+import { MdOutlineArrowDownward } from "react-icons/md";
 
 const Chat = ({ chatId, promptOutput }) => {
   const { data: session, status } = useSession();
+  const [isInViewport, setIsInViewport] = useState(false);
   const messagesEndRef = useRef(null);
 
   const [messages, loading, error] = useCollection(
@@ -36,6 +38,32 @@ const Chat = ({ chatId, promptOutput }) => {
   useEffect(() => {
     scrollToBottom();
   }, [messages, promptOutput]);
+
+  useEffect(() => {
+    const target = messagesEndRef.current;
+
+    const handleIntersection = (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setIsInViewport(true);
+        } else {
+          setIsInViewport(false);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(handleIntersection);
+
+    if (target) {
+      observer.observe(target);
+    }
+
+    return () => {
+      if (target) {
+        observer.unobserve(target);
+      }
+    };
+  });
 
   if (loading) return <div className=""></div>;
   return messages?.docs.length === 0 ? (
@@ -172,35 +200,44 @@ const Chat = ({ chatId, promptOutput }) => {
       </div>
     </div>
   ) : (
-    <div className=" flex-1 w-full px-4">
-      <div className="" id="REF"></div>
-      <div className="w-full max-w-screen-md mx-auto relative flex flex-col gap-10 pb-20 pt-6">
-        {messages?.docs?.map((e) => {
-          if (e?.data().user.id) {
-            return (
-              <div className="relative">
-                <OutputMessage e={e} promptOutput={promptOutput} />
-                <div
-                  className="absolute -bottom-52 mt-20"
-                  ref={messagesEndRef}
-                />
-              </div>
-            );
-          } else {
-            return <InputMessage e={e} />;
-          }
-        })}
-        {/* <button
-          onClick={() => {
-            document
-              .getElementById("REF")
-              .scrollIntoView({ behavior: "smooth", block: "start" });
-          }}
-        >
-          click
-        </button> */}
+    <>
+      <div className=" flex-1 w-full px-4 relative mb-16">
+        <div className="w-full max-w-screen-md mx-auto relative flex flex-col pb-2 pt-6 ">
+          {messages?.docs?.map((e) => {
+            if (e?.data().user.id) {
+              return (
+                <div className="relative">
+                  <OutputMessage
+                    e={e}
+                    promptOutput={promptOutput}
+                    endRef={messagesEndRef}
+                  />
+                  <div className="absolute -bottom-4 mt-20" />
+                </div>
+              );
+            } else {
+              return <InputMessage e={e} />;
+            }
+          })}
+        </div>
       </div>
-    </div>
+      {!isInViewport && (
+        <div className="sticky bottom-28 left-1/2 w-0 h-0 mx-auto z-40">
+          <button
+            onClick={scrollToBottom}
+            className="absolute bottom-0 mx-auto p-1.5  ring-gray-400/70 ring-[.1px] text-xl rounded-full bg-[#212121]"
+          >
+            <MdOutlineArrowDownward />
+          </button>
+        </div>
+      )}
+      <div className="relative w-full h-1 bg-blue-400 z-[-100]">
+        <div
+          ref={messagesEndRef}
+          className="absolute w-6 h-3 bg-red-600 left-1/2 top-14"
+        ></div>
+      </div>
+    </>
   );
 };
 
