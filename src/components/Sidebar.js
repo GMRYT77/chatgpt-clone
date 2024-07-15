@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -10,18 +10,20 @@ import { HiDotsHorizontal } from "react-icons/hi";
 import NewChat from "./NewChat";
 import { useSession } from "next-auth/react";
 import { useCollection } from "react-firebase-hooks/firestore";
-import { collection, orderBy, query } from "firebase/firestore";
+import { collection, orderBy, query, where } from "firebase/firestore";
 import { db } from "../../firebase";
 import ChatRow from "./ChatRow";
 import { RiLoader2Line } from "react-icons/ri";
 import { useSidebarContext } from "./SidebarContext";
 import Image from "next/image";
 import { LuMoveUpRight } from "react-icons/lu";
+import { timeDescription } from "@/lib/timestampToDate";
 
 const Sidebar = () => {
   const { data: session } = useSession();
-  const { isOpen, setIsOpen } = useSidebarContext();
-
+  const { isOpen, setIsOpen, isQuota, setIsQuota } = useSidebarContext();
+  const [timsStampChats, setTimeStampChats] = useState([]);
+  let dict = {};
   const [chats, loading, error] = useCollection(
     session &&
       query(
@@ -29,6 +31,13 @@ const Sidebar = () => {
         orderBy("createdAt", "desc")
       )
   );
+  useEffect(() => {
+    if (!loading) {
+      if (error?.code === "resource-exhausted" && chats?.docs === undefined) {
+        setIsQuota(true);
+      }
+    }
+  }, [loading]);
 
   const closeMenu = () => {
     const menu = document.getElementById("MENU_BAR");
@@ -103,15 +112,24 @@ const Sidebar = () => {
                   <div className="w-full h-full flex justify-center items-center">
                     <RiLoader2Line className="text-lg animate-spin" />
                   </div>
+                ) : chats?.docs === undefined &&
+                  error?.code === "resource-exhausted" &&
+                  isQuota ? (
+                  <div className="w-full h-full flex justify-center items-center text-sm text-gray-400">
+                    <span>{error?.message}</span>
+                  </div>
                 ) : (
                   <div className="flex flex-col">
+                    {/* ChatBlock */}
                     <div className="flex flex-col">
-                      <h5 className="text-xs font-[400] text-neutral-300/80 tracking-tight px-2 mb-2 mt-6">
-                        Today
-                      </h5>
                       {chats?.docs?.map((chat) => {
+                        let ts = chat?.data()?.createdAt?.toDate();
+
                         return (
                           <>
+                            <h5 className="text-xs font-[400] text-neutral-300/80 tracking-tight px-2 mb-2 mt-6">
+                              {timeDescription(ts)}
+                            </h5>
                             <ChatRow key={chat?.id} id={chat?.id} />
                           </>
                         );

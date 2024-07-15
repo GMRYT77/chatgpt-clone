@@ -6,9 +6,10 @@ const SidebarContext = createContext();
 
 export function SidebarWrapper({ children }) {
   const [isOpen, setIsOpen] = useState(true);
+  const [isQuota, setIsQuota] = useState(false);
 
   return (
-    <SidebarContext.Provider value={{ isOpen, setIsOpen }}>
+    <SidebarContext.Provider value={{ isOpen, setIsOpen, isQuota, setIsQuota }}>
       {children}
     </SidebarContext.Provider>
   );

@@ -36,11 +36,12 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { db } from "../../firebase";
 import moment from "moment";
 import { useRouter } from "next/navigation";
+import { RxInfoCircled } from "react-icons/rx";
 var randomstring = require("randomstring");
 
 export default function Home() {
   const { data: session, status } = useSession();
-  const { isOpen, setIsOpen } = useSidebarContext();
+  const { isOpen, setIsOpen, isQuota } = useSidebarContext();
   const [prompt, setPrompt] = useState("");
   const [output, setOutput] = useState("");
   const textareaRef = useRef(null);
@@ -67,7 +68,11 @@ export default function Home() {
         userId: session?.user?.email,
         createdAt: serverTimestamp(),
       }
-    );
+    )
+      .then(() => {})
+      .catch((err) => {
+        console.log("err");
+      });
     return doc.id;
     // router.push(`/chat/${doc.id}`);
   };
@@ -83,114 +88,134 @@ export default function Home() {
     const input = prompt.trim();
     setPrompt("");
 
-    let mId = randomString();
+    try {
+      let mId = randomString();
 
-    const message = {
-      text: input,
-      createdAt: serverTimestamp(),
-      user: {
-        _id: session?.user?.email,
-        name: session?.user?.name,
-        avatar:
-          session?.user?.image ||
-          `https://ui-avatars.com/api/?name=${session?.user?.name}`,
-      },
-    };
-
-    await addDoc(
-      collection(
-        db,
-        "users",
-        session?.user?.email,
-        "chats",
-        chatId,
-        "messages"
-      ),
-      message
-    );
-
-    //Toast
-    const notification = toast.loading("ChatGPT is thinking...");
-
-    const genAI = new GoogleGenerativeAI(
-      "AIzaSyD6zQ0Ag9OJVeI5gd27JkwJeuMNHDiD7qw"
-    );
-
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-    const result = await model.generateContentStream([input]);
-
-    await setDoc(
-      doc(db, "users", session?.user?.email, "chats", chatId, "messages", mId),
-      {
-        text: "loading",
+      const message = {
+        text: input,
         createdAt: serverTimestamp(),
-        error: false,
-        responded: false,
         user: {
-          id: "Gemini",
+          _id: session?.user?.email,
+          name: session?.user?.name,
+          avatar:
+            session?.user?.image ||
+            `https://ui-avatars.com/api/?name=${session?.user?.name}`,
         },
-      }
-    );
+      };
 
-    for await (const chunk of result.stream) {
-      const chunkText = chunk.text();
-      setOutput(chunkText);
-    }
+      await addDoc(
+        collection(
+          db,
+          "users",
+          session?.user?.email,
+          "chats",
+          chatId,
+          "messages"
+        ),
+        message
+      ).catch((err) => console.log("addDoc", err));
 
-    result.response
-      .then(async (res) => {
-        toast.success("ChatGPT has responded!", {
-          id: notification,
-        });
+      //Toast
+      const notification = toast.loading("ChatGPT is thinking...");
 
-        let msgData = {
-          text: res.text(),
-          responded: true,
-        };
+      const genAI = new GoogleGenerativeAI(
+        "AIzaSyD6zQ0Ag9OJVeI5gd27JkwJeuMNHDiD7qw"
+      );
 
-        await updateDoc(
-          doc(
-            db,
-            "users",
-            session?.user?.email,
-            "chats",
-            chatId,
-            "messages",
-            mId
-          ),
-          msgData
-        );
-      })
-      .catch(async (err) => {
-        toast.error("ChatGPT got an error!", {
-          id: notification,
-        });
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        let msgData = {
-          text: err,
-          responded: true,
-          error: true,
-        };
+      const result = await model.generateContentStream([input]);
 
-        await updateDoc(
-          doc(
-            db,
-            "users",
-            session?.user?.email,
-            "chats",
-            chatId,
-            "messages",
-            mId
-          ),
-          msgData
-        );
-        console.log(err);
+      await setDoc(
+        doc(
+          db,
+          "users",
+          session?.user?.email,
+          "chats",
+          chatId,
+          "messages",
+          mId
+        ),
+        {
+          text: "loading",
+          createdAt: serverTimestamp(),
+          error: false,
+          responded: false,
+          user: {
+            id: "Gemini",
+          },
+        }
+      ).catch((err) => {
+        console.log("setDoc:", err);
       });
+
+      for await (const chunk of result.stream) {
+        const chunkText = chunk.text();
+        setOutput(chunkText);
+      }
+
+      result.response
+        .then(async (res) => {
+          toast.success("ChatGPT has responded!", {
+            id: notification,
+          });
+
+          let msgData = {
+            text: res.text(),
+            responded: true,
+          };
+
+          await updateDoc(
+            doc(
+              db,
+              "users",
+              session?.user?.email,
+              "chats",
+              chatId,
+              "messages",
+              mId
+            ),
+            msgData
+          );
+        })
+        .catch(async (err) => {
+          toast.error("ChatGPT got an error!", {
+            id: notification,
+          });
+
+          let msgData = {
+            text: err,
+            responded: true,
+            error: true,
+          };
+
+          await updateDoc(
+            doc(
+              db,
+              "users",
+              session?.user?.email,
+              "chats",
+              chatId,
+              "messages",
+              mId
+            ),
+            msgData
+          );
+          console.log("Error2: ", err);
+        });
+    } catch (err) {
+      console.log("Error2: ", err);
+    }
   };
 
   const sendPrompt = async (f) => {
     f.preventDefault();
+    if (!prompt) return;
+    if (isQuota) {
+      setPrompt("");
+      toast.error("Api limit exceeded, please try again tomorrow.");
+      return;
+    }
     await createNewChat().then(async (id) => {
       router.replace(`/chat/${id}`);
       await sendMessage(id).then(() => {});
@@ -374,6 +399,13 @@ export default function Home() {
                 </DropdownMenu>
               )}
             </div>
+            {isQuota && (
+              <div className="absolute w-full top-full left-0 py-1.5 flex gap-2 items-center justify-center bg-[#50472c] text-[.825rem] font-mono font-light">
+                <RxInfoCircled className="text-[105%]" />
+                Sorry, you have exhauster your daily API limit. Please try again
+                tomorrow.
+              </div>
+            )}
           </div>
           {/* Chat */}
           <div className="w-full flex-1 flex flex-col items-center justify-center gap-12 overflow-y-hidden px-4 ">
@@ -521,12 +553,13 @@ export default function Home() {
                 value={prompt}
                 onChange={(e) => {
                   setPrompt(e.target.value);
-                  e.target.addEventListener("keypress", (f) => {
-                    if (f.key === "Enter" && !f.shiftKey) {
-                      f.preventDefault();
-                      return false;
-                    }
-                  });
+                }}
+                onKeyDown={(f) => {
+                  if (f.key === "Enter" && !f.shiftKey) {
+                    f.preventDefault();
+                    sendPrompt(f);
+                    return false;
+                  }
                 }}
                 rows="1"
                 id="CHAT"

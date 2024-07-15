@@ -53,7 +53,7 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border m-0 p-0;
   }
   body {
     @apply bg-background text-foreground;

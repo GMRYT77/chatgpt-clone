@@ -17,6 +17,7 @@ import { queryGemini } from "@/lib/gemini";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import moment from "moment";
 import { MdOutlineArrowUpward } from "react-icons/md";
+import { useSidebarContext } from "./SidebarContext";
 var randomstring = require("randomstring");
 
 const useChatInput = ({ chatId }) => {
@@ -24,6 +25,7 @@ const useChatInput = ({ chatId }) => {
   const [prompt, setPrompt] = useState("");
   const [output, setOutput] = useState("");
   const textareaRef = useRef(null);
+  const { isQuota, setIsQuota } = useSidebarContext();
 
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -46,6 +48,11 @@ const useChatInput = ({ chatId }) => {
   const sendMessage = async (e) => {
     e.preventDefault();
     if (!prompt) return;
+    if (isQuota) {
+      setPrompt("");
+      toast.error("Api limit exceeded, please try again tomorrow.");
+      return;
+    }
 
     const input = prompt.trim();
     setPrompt("");
@@ -212,7 +219,7 @@ const useChatInput = ({ chatId }) => {
     prompt,
     promptOutput: output,
     render: (
-      <div className="w-full px-4 flex flex-col items-center sticky z-50 bottom-0 left-0">
+      <div className="w-full px-4 flex flex-col items-center sticky z-20 bottom-0 left-0">
         <form
           onSubmit={sendMessage}
           className="w-full max-w-screen-md mx-auto relative rounded-[24px] bg-[#2f2f2f] flex items-end gap-2 pl-4 pr-2 py-2"

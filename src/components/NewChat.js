@@ -3,12 +3,19 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { db } from "../../firebase";
+import { useSidebarContext } from "./SidebarContext";
+import toast from "react-hot-toast";
 
 const NewChat = () => {
   const { data: session } = useSession();
   const router = useRouter();
+  const { isQuota } = useSidebarContext();
 
   const createNewChat = async () => {
+    if (isQuota) {
+      toast.error("Api limit exceeded, please try again tomorrow.");
+      return;
+    }
     const doc = await addDoc(
       collection(db, "users", session?.user?.email, "chats"),
       {

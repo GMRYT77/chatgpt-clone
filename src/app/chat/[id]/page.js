@@ -24,11 +24,12 @@ import Chat from "@/components/Chat";
 import useChatInput from "@/components/ChatInput";
 import NewChat from "@/components/NewChat";
 import { useSidebarContext } from "@/components/SidebarContext";
+import { RxInfoCircled } from "react-icons/rx";
 
 const page = ({ params: { id } }) => {
   const { data: session, status } = useSession();
   const { prompt, promptOutput, render } = useChatInput({ chatId: id });
-  const { isOpen, setIsOpen } = useSidebarContext();
+  const { isOpen, setIsOpen, isQuota } = useSidebarContext();
 
   const openMenu = () => {
     const menu = document.getElementById("MENU_BAR");
@@ -203,6 +204,15 @@ const page = ({ params: { id } }) => {
               </DropdownMenu>
             )}
           </div>
+          {isQuota ? (
+            <div className="absolute w-full top-full left-0 py-1.5 flex gap-2 items-center justify-center bg-[#50472c] text-[.825rem] font-mono font-light">
+              <RxInfoCircled className="text-[105%]" />
+              Sorry, you have exhauster your daily API limit. Please try again
+              tomorrow.
+            </div>
+          ) : (
+            ""
+          )}
         </div>
         <Chat chatId={id} promptOutput={promptOutput} />
         {render}
