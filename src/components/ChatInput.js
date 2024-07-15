@@ -18,6 +18,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import moment from "moment";
 import { MdOutlineArrowUpward } from "react-icons/md";
 import { useSidebarContext } from "./SidebarContext";
+import { genAI } from "@/lib/geminiApi";
 var randomstring = require("randomstring");
 
 const useChatInput = ({ chatId }) => {
@@ -86,9 +87,6 @@ const useChatInput = ({ chatId }) => {
     //Toast
     const notification = toast.loading("ChatGPT is thinking...");
 
-    const genAI = new GoogleGenerativeAI(
-      "AIzaSyD6zQ0Ag9OJVeI5gd27JkwJeuMNHDiD7qw"
-    );
     // Choose a model that's appropriate for your use case.
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 

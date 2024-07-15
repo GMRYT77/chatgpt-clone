@@ -37,6 +37,8 @@ import { db } from "../../firebase";
 import moment from "moment";
 import { useRouter } from "next/navigation";
 import { RxInfoCircled } from "react-icons/rx";
+import { genAI } from "@/lib/geminiApi";
+import { GiFallingStar } from "react-icons/gi";
 var randomstring = require("randomstring");
 
 export default function Home() {
@@ -44,8 +46,10 @@ export default function Home() {
   const { isOpen, setIsOpen, isQuota } = useSidebarContext();
   const [prompt, setPrompt] = useState("");
   const [output, setOutput] = useState("");
+  const [geminiModel, setGeminiModel] = useState("gemini-1.5-flash");
   const textareaRef = useRef(null);
   const router = useRouter();
+
   // const { prompt, promptOutput, render } = useChatInput({ chatId: id });
 
   useEffect(() => {
@@ -118,11 +122,7 @@ export default function Home() {
       //Toast
       const notification = toast.loading("ChatGPT is thinking...");
 
-      const genAI = new GoogleGenerativeAI(
-        "AIzaSyD6zQ0Ag9OJVeI5gd27JkwJeuMNHDiD7qw"
-      );
-
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: geminiModel });
 
       const result = await model.generateContentStream([input]);
 
@@ -257,15 +257,15 @@ export default function Home() {
     <main className="w-full h-screen bg-[#212121] flex flex-col relative">
       <div className="w-full h-full flex flex-col relative">
         <div className="w-full h-full flex flex-col flex-1 relative overflow-y-auto ">
-          <div
-            onClick={openMenu}
-            className="w-full sticky top-0 left-0 px-4 py-2 items-center flex justify-between bg-[#212121] z-30"
-          >
-            <button className="w-5 h-6 md:hidden flex flex-col justify-evenly">
+          <div className="w-full sticky top-0 left-0 px-4 py-2 items-center flex justify-between bg-[#212121] z-30">
+            <button
+              onClick={openMenu}
+              className="w-5 h-6 md:hidden flex flex-col justify-evenly"
+            >
               <span className="w-5 h-0.5 rounded-full bg-gray-300"></span>
               <span className="w-3 h-0.5 rounded-full bg-gray-300"></span>
             </button>
-            <div className="flex gap-1">
+            <div className="flex gap-1 items-center">
               <div className={!isOpen ? "gap-2 hidden md:flex" : "hidden"}>
                 <TooltipProvider>
                   <Tooltip>
@@ -308,19 +308,160 @@ export default function Home() {
                   </Tooltip>
                 </TooltipProvider>
               </div>
-              <Button
-                variant="ghost"
-                className="text-gray-300/80 tracking-tight font-medium hover:text-gray-300/80 hover:bg-slate-100/10 flex items-center gap-1 text-lg"
-              >
-                ChatGPT <IoIosArrowDown className="opacity-80" />
-              </Button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger className="outline-none border-0">
+                  <div className="relative text-gray-300/80 tracking-tight font-medium transition py-2 px-4 rounded-md hover:text-gray-300/80 hover:bg-slate-100/10 flex items-center gap-1 text-lg">
+                    ChatGPT <IoIosArrowDown className="opacity-80" />
+                  </div>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-[#2f2f2f] p-2 rounded-[18px] absolute top-full -translate-x-1/2 md:translate-x-0 md:-left-16 flex flex-col min-w-[260px] md:min-w-[320px]">
+                  <DropdownMenuItem
+                    onClick={() => setGeminiModel("gemini-1.5-pro")}
+                    className="flex items-center gap-2 w-full px-4 py-3 rounded-md focus:bg-[#858585]/20  cursor-pointer"
+                  >
+                    <span className="w-7 h-7 rounded-full bg-[#424242] flex items-center justify-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        class="h-4 w-4 text-token-text-primary"
+                      >
+                        <path
+                          fill="currentColor"
+                          d="M15.11 14.285a.41.41 0 0 1 .78 0c.51 2.865.96 3.315 3.825 3.826.38.12.38.658 0 .778-2.865.511-3.315.961-3.826 3.826a.408.408 0 0 1-.778 0c-.511-2.865-.961-3.315-3.826-3.826a.408.408 0 0 1 0-.778c2.865-.511 3.315-.961 3.826-3.826Zm2.457-12.968a.454.454 0 0 1 .866 0C19 4.5 19.5 5 22.683 5.567a.454.454 0 0 1 0 .866C19.5 7 19 7.5 18.433 10.683a.454.454 0 0 1-.866 0C17 7.5 16.5 7 13.317 6.433a.454.454 0 0 1 0-.866C16.5 5 17 4.5 17.567 1.317"
+                        ></path>
+                        <path
+                          fill="currentColor"
+                          fill-rule="evenodd"
+                          d="M7.001 4a1 1 0 0 1 .993.887c.192 1.7.701 2.877 1.476 3.665.768.783 1.913 1.3 3.618 1.452a1 1 0 0 1-.002 1.992c-1.675.145-2.849.662-3.638 1.452-.79.79-1.307 1.963-1.452 3.638a1 1 0 0 1-1.992.003c-.152-1.706-.67-2.851-1.452-3.62-.788-.774-1.965-1.283-3.665-1.475a1 1 0 0 1-.002-1.987c1.73-.2 2.878-.709 3.646-1.476.767-.768 1.276-1.916 1.476-3.646A1 1 0 0 1 7 4Zm-2.472 6.998a6.1 6.1 0 0 1 2.468 2.412 6.2 6.2 0 0 1 1.037-1.376 6.2 6.2 0 0 1 1.376-1.036 6.1 6.1 0 0 1-2.412-2.469 6.2 6.2 0 0 1-1.053 1.416 6.2 6.2 0 0 1-1.416 1.053"
+                          clip-rule="evenodd"
+                        ></path>
+                      </svg>
+                    </span>
+                    <div className="flex flex-col flex-1">
+                      <span className="text-sm text-white font-light tracking-tight ">
+                        Gemini 1.5 Pro
+                      </span>
+                      <p className="text-[.725rem] text-[#a7a7a7]">
+                        Powerful and Versatile
+                      </p>
+                    </div>
+                    {geminiModel === "gemini-1.5-pro" && (
+                      <div className="flex ">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          class="icon-md"
+                        >
+                          <path
+                            fill="currentColor"
+                            fill-rule="evenodd"
+                            d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12m14.076-4.068a1 1 0 0 1 .242 1.393l-4.75 6.75a1 1 0 0 1-1.558.098l-2.5-2.75a1 1 0 0 1 1.48-1.346l1.66 1.827 4.032-5.73a1 1 0 0 1 1.394-.242"
+                            clip-rule="evenodd"
+                          ></path>
+                        </svg>
+                      </div>
+                    )}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setGeminiModel("gemini-1.5-flash")}
+                    className="flex items-center gap-2 w-full px-4 py-3 rounded-md focus:bg-[#858585]/20  cursor-pointer"
+                  >
+                    <span className="w-7 h-7 rounded-full bg-[#424242] flex items-center justify-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        class="h-4 w-4 text-token-text-primary"
+                      >
+                        <path
+                          fill="currentColor"
+                          fill-rule="evenodd"
+                          d="M12 7.42a22 22 0 0 0-2.453 2.127A22 22 0 0 0 7.42 12a22 22 0 0 0 2.127 2.453c.807.808 1.636 1.52 2.453 2.128a22 22 0 0 0 2.453-2.128A22 22 0 0 0 16.58 12a22 22 0 0 0-2.127-2.453A22 22 0 0 0 12 7.42m1.751-1.154a25 25 0 0 1 2.104 1.88 25 25 0 0 1 1.88 2.103c.316-.55.576-1.085.779-1.59.35-.878.507-1.625.503-2.206-.003-.574-.16-.913-.358-1.111-.199-.199-.537-.356-1.112-.36-.58-.003-1.328.153-2.205.504-.506.203-1.04.464-1.59.78Zm3.983 7.485a25 25 0 0 1-1.88 2.104 25 25 0 0 1-2.103 1.88 13 13 0 0 0 1.59.779c.878.35 1.625.507 2.206.503.574-.003.913-.16 1.111-.358.199-.199.356-.538.36-1.112.003-.58-.154-1.328-.504-2.205a13 13 0 0 0-.78-1.59ZM12 18.99c.89.57 1.768 1.03 2.605 1.364 1.026.41 2.036.652 2.955.646.925-.006 1.828-.267 2.5-.94.673-.672.934-1.575.94-2.5.006-.919-.236-1.929-.646-2.954A15.7 15.7 0 0 0 18.99 12a15.6 15.6 0 0 0 1.364-2.606c.41-1.025.652-2.035.646-2.954-.006-.925-.267-1.828-.94-2.5-.672-.673-1.575-.934-2.5-.94-.919-.006-1.929.235-2.954.646-.838.335-1.716.795-2.606 1.364a15.7 15.7 0 0 0-2.606-1.364C8.37 3.236 7.36 2.994 6.44 3c-.925.006-1.828.267-2.5.94-.673.672-.934 1.575-.94 2.5-.006.919.235 1.929.646 2.955A15.7 15.7 0 0 0 5.01 12c-.57.89-1.03 1.768-1.364 2.605-.41 1.026-.652 2.036-.646 2.955.006.925.267 1.828.94 2.5.672.673 1.575.934 2.5.94.92.006 1.93-.235 2.955-.646A15.7 15.7 0 0 0 12 18.99m-1.751-1.255a25 25 0 0 1-2.104-1.88 25 25 0 0 1-1.88-2.104c-.315.55-.576 1.085-.779 1.59-.35.878-.507 1.625-.503 2.206.003.574.16.913.359 1.111.198.199.537.356 1.111.36.58.003 1.328-.153 2.205-.504.506-.203 1.04-.463 1.59-.78Zm-3.983-7.486a25 25 0 0 1 1.88-2.104 25 25 0 0 1 2.103-1.88 13 13 0 0 0-1.59-.779c-.878-.35-1.625-.507-2.206-.503-.574.003-.913.16-1.111.359-.199.198-.356.537-.36 1.111-.003.58.153 1.328.504 2.205.203.506.464 1.04.78 1.59Z"
+                          clip-rule="evenodd"
+                        ></path>
+                      </svg>
+                    </span>
+                    <div className="flex flex-col flex-1">
+                      <span className="text-sm text-white font-light tracking-tight ">
+                        Gemini 1.5 Flash
+                      </span>
+                      <p className="text-[.725rem] text-[#a7a7a7]">
+                        Speed and Efficient
+                      </p>
+                    </div>
+                    {geminiModel === "gemini-1.5-flash" && (
+                      <div className="flex ">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          class="icon-md"
+                        >
+                          <path
+                            fill="currentColor"
+                            fill-rule="evenodd"
+                            d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12m14.076-4.068a1 1 0 0 1 .242 1.393l-4.75 6.75a1 1 0 0 1-1.558.098l-2.5-2.75a1 1 0 0 1 1.48-1.346l1.66 1.827 4.032-5.73a1 1 0 0 1 1.394-.242"
+                            clip-rule="evenodd"
+                          ></path>
+                        </svg>
+                      </div>
+                    )}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setGeminiModel("gemini-1.0-pro")}
+                    className="flex items-center gap-2 w-full px-4 py-3 rounded-md focus:bg-[#858585]/20 cursor-pointer"
+                  >
+                    <span className="w-7 h-7 rounded-full bg-[#424242] flex items-center justify-center">
+                      <GiFallingStar className="w-[16px] h-[16px]" />
+                    </span>
+                    <div className="flex flex-col flex-1">
+                      <span className="text-sm text-white font-light tracking-tight ">
+                        Gemini 1.0 Pro
+                      </span>
+                      <p className="text-[.725rem] text-[#a7a7a7]">
+                        Initial Major release.
+                      </p>
+                    </div>
+                    {geminiModel === "gemini-1.0-pro" && (
+                      <div className="flex ">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          class="icon-md"
+                        >
+                          <path
+                            fill="currentColor"
+                            fill-rule="evenodd"
+                            d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12m14.076-4.068a1 1 0 0 1 .242 1.393l-4.75 6.75a1 1 0 0 1-1.558.098l-2.5-2.75a1 1 0 0 1 1.48-1.346l1.66 1.827 4.032-5.73a1 1 0 0 1 1.394-.242"
+                            clip-rule="evenodd"
+                          ></path>
+                        </svg>
+                      </div>
+                    )}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-            <div className="w-8 h-8 rounded-full relative overflow-hidden">
+            <div className="w-8 h-8 rounded-full relative overflow-hidden ring-transparent ring-4 transition hover:ring-[#9e9e9e]/30 cursor-pointer ">
               {!session ? (
                 <div className="w-full h-full bg-gray-200 animate-pulse"></div>
               ) : (
                 <DropdownMenu>
-                  <DropdownMenuTrigger>
+                  <DropdownMenuTrigger className="">
                     <Image
                       src={session?.user?.image}
                       fill
@@ -400,7 +541,7 @@ export default function Home() {
               )}
             </div>
             {isQuota && (
-              <div className="absolute w-full top-full left-0 py-1.5 flex gap-2 items-center justify-center bg-[#50472c] text-[.825rem] font-mono font-light">
+              <div className="absolute w-full top-full left-0 py-1.5 px-4 leading-5 flex gap-2 items-center justify-center bg-[#50472c] text-[.825rem] font-mono font-light">
                 <RxInfoCircled className="text-[105%]" />
                 Sorry, you have exhauster your daily API limit. Please try again
                 tomorrow.
