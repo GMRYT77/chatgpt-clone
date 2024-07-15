@@ -20,19 +20,21 @@ export default async function RootLayout({ children }) {
   return (
     <html lang="en" className="dark">
       <body className={inter.className}>
-        <SessionProvider session={session}>
-          {!session ? (
-            <Login />
-          ) : (
-            <div className="relative flex w-full h-[100vh]">
-              <SidebarWrapper>
-                <Sidebar />
-                <ClientProvider />
-                <div className="w-full flex-1 transition">{children}</div>
-              </SidebarWrapper>
-            </div>
-          )}
-        </SessionProvider>
+        <div className="relative w-full h-full max-w-full overflow-hidden">
+          <SessionProvider session={session}>
+            {!session ? (
+              <Login />
+            ) : (
+              <div className="relative flex w-full h-full">
+                <SidebarWrapper>
+                  <Sidebar />
+                  <ClientProvider />
+                  <div className="w-full flex-1 transition">{children}</div>
+                </SidebarWrapper>
+              </div>
+            )}
+          </SessionProvider>
+        </div>
       </body>
     </html>
   );
