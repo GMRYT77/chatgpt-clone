@@ -18,10 +18,10 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import moment from "moment";
 import { MdOutlineArrowUpward } from "react-icons/md";
 import { useSidebarContext } from "./SidebarContext";
-import { genAI } from "@/lib/geminiApi";
+// import { genAI } from "@/lib/geminiApi";
 var randomstring = require("randomstring");
 
-const useChatInput = ({ chatId }) => {
+const useChatInput = ({ chatId, geminiModel }) => {
   const { data: session } = useSession();
   const [prompt, setPrompt] = useState("");
   const [output, setOutput] = useState("");
@@ -87,8 +87,11 @@ const useChatInput = ({ chatId }) => {
     //Toast
     const notification = toast.loading("ChatGPT is thinking...");
 
+    const genAI = new GoogleGenerativeAI(
+      "AIzaSyCqbte8Mt26JRMRZt7xxZuPlxw_WKkQot4"
+    );
     // Choose a model that's appropriate for your use case.
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: geminiModel });
 
     //  queryGemini({ prompt, chatId, session })
     //    .then(async (res) => {
@@ -139,7 +142,7 @@ const useChatInput = ({ chatId }) => {
     //      console.log(err);
     //    });
 
-    const result = await model.generateContentStream([prompt]);
+    const result = await model.generateContentStream([input]);
 
     await setDoc(
       doc(db, "users", session?.user?.email, "chats", chatId, "messages", mId),
@@ -148,6 +151,7 @@ const useChatInput = ({ chatId }) => {
         createdAt: serverTimestamp(),
         error: false,
         responded: false,
+        model: geminiModel,
         user: {
           id: "Gemini",
         },
@@ -254,13 +258,13 @@ const useChatInput = ({ chatId }) => {
               height="32"
               fill="none"
               viewBox="0 0 32 32"
-              class="icon-2xl"
+              className="icon-2xl"
             >
               <path
                 fill="currentColor"
-                fill-rule="evenodd"
+                fillRule="evenodd"
                 d="M15.192 8.906a1.143 1.143 0 0 1 1.616 0l5.143 5.143a1.143 1.143 0 0 1-1.616 1.616l-3.192-3.192v9.813a1.143 1.143 0 0 1-2.286 0v-9.813l-3.192 3.192a1.143 1.143 0 1 1-1.616-1.616z"
-                clip-rule="evenodd"
+                clipRule="evenodd"
               ></path>
             </svg>
           </button>

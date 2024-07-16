@@ -327,6 +327,7 @@ const Chat = ({ chatId, promptOutput }) => {
                     e={e}
                     promptOutput={promptOutput}
                     endRef={messagesEndRef}
+                    model={e?.data().model}
                   />
                   <div className="absolute -bottom-4 mt-20" />
                 </div>

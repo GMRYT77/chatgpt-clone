@@ -18,6 +18,7 @@ import { useSidebarContext } from "./SidebarContext";
 import Image from "next/image";
 import { LuMoveUpRight } from "react-icons/lu";
 import { timeDescription } from "@/lib/timestampToDate";
+var removeWhitespace = require("remove-whitespace");
 
 const Sidebar = () => {
   const { data: session } = useSession();
@@ -123,16 +124,11 @@ const Sidebar = () => {
                     {/* ChatBlock */}
                     <div className="flex flex-col">
                       {chats?.docs?.map((chat) => {
-                        let ts = chat?.data()?.createdAt?.toDate();
-
-                        return (
-                          <>
-                            <h5 className="text-xs font-[400] text-neutral-300/80 tracking-tight px-2 mb-2 mt-6">
-                              {timeDescription(ts)}
-                            </h5>
-                            <ChatRow key={chat?.id} id={chat?.id} />
-                          </>
+                        let ts = timeDescription(
+                          chat?.data()?.createdAt?.toDate()
                         );
+
+                        return <ChatRow key={chat?.id} id={chat?.id} ts={ts} />;
                       })}
                     </div>
                   </div>

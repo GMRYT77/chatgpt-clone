@@ -6,12 +6,12 @@ import { getFirestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyB0uLOil_d5_oer1ylx610ke8A0CsT_JPo",
-  authDomain: "chatgpt-clone-e8726.firebaseapp.com",
-  projectId: "chatgpt-clone-e8726",
-  storageBucket: "chatgpt-clone-e8726.appspot.com",
-  messagingSenderId: "154728019059",
-  appId: "1:154728019059:web:91fd8af5f6b81caa69e606",
+  apiKey: "AIzaSyD3REtq_8sazM2qPmo8WeDjagd8mWqZneg",
+  authDomain: "chatgpt-clone-2.firebaseapp.com",
+  projectId: "chatgpt-clone-2",
+  storageBucket: "chatgpt-clone-2.appspot.com",
+  messagingSenderId: "476072958217",
+  appId: "1:476072958217:web:0458a7a17334ac6dc31bd8",
 };
 
 // Initialize Firebase
