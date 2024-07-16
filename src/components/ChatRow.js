@@ -87,25 +87,27 @@ const ChatRow = ({ id, ts }) => {
       <Link
         id={id}
         href={`/chat/${id}`}
-        className={`relative group text-clip whitespace-nowrap overflow-hidden w-full rounded-md text-[.85rem] font-light p-2 cursor-pointer tracking-tight ${
+        className={`relative group text-start  overflow-hidden w-full rounded-md text-[.85rem] font-light p-2 cursor-pointer tracking-tight ${
           active ? "bg-[#212121]" : "hover:bg-[#212121]/80 "
         }`}
         onClick={closeMenu}
       >
-        {removeMarkdown(
-          messages?.docs?.[messages?.docs?.length - 1]?.data().text
-        ).slice(0, 50) === "loading" ? (
-          <div className="flex space-x-1 justify-center items-center w-fit h-[16.4px]">
-            <span className="sr-only">Loading...</span>
-            <div className="h-1 w-1 bg-[#686868] rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-            <div className="h-1 w-1 bg-[#686868] rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-            <div className="h-1 w-1 bg-[#686868] rounded-full animate-bounce"></div>
-          </div>
-        ) : (
-          removeMarkdown(
+        <span className="text-clip whitespace-nowrap">
+          {removeMarkdown(
             messages?.docs?.[messages?.docs?.length - 1]?.data().text
-          ).slice(0, 50) || "New Chat"
-        )}
+          ).slice(0, 50) === "loading" ? (
+            <div className="flex space-x-1 justify-center items-center w-fit h-[16.4px]">
+              <span className="sr-only">Loading...</span>
+              <div className="h-1 w-1 bg-[#686868] rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+              <div className="h-1 w-1 bg-[#686868] rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+              <div className="h-1 w-1 bg-[#686868] rounded-full animate-bounce"></div>
+            </div>
+          ) : (
+            removeMarkdown(
+              messages?.docs?.[messages?.docs?.length - 1]?.data().text
+            ).slice(0, 60) || "New Chat"
+          )}
+        </span>
 
         <div className="absolute top-0 right-0 flex h-full">
           <div
@@ -115,8 +117,8 @@ const ChatRow = ({ id, ts }) => {
           ></div>
           <div
             className={`${
-              active ? "visible" : "invisible"
-            } group-hover:visible flex h-full bg-[#212121] items-center px-2 text-lg text-gray-400/80`}
+              active ? "w-fit px-2" : "w-0 px-0"
+            } group-hover:visible  group-hover:w-fit group-hover:px-2 flex h-full bg-[#212121] items-center  text-lg text-gray-400/80`}
           >
             <DropdownMenu>
               <DropdownMenuTrigger>

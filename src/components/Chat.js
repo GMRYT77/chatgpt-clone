@@ -319,10 +319,10 @@ const Chat = ({ chatId, promptOutput }) => {
     <>
       <div className=" flex-1 w-full px-4 relative mb-16">
         <div className="w-full max-w-screen-md mx-auto relative flex flex-col pb-2 pt-6 ">
-          {messages?.docs?.map((e) => {
+          {messages?.docs?.map((e, i) => {
             if (e?.data().user.id) {
               return (
-                <div className="relative">
+                <div className="relative" key={i}>
                   <OutputMessage
                     e={e}
                     promptOutput={promptOutput}
