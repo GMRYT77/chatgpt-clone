@@ -39,6 +39,7 @@ import { useRouter } from "next/navigation";
 import { RxInfoCircled } from "react-icons/rx";
 // import { genAI } from "@/lib/geminiApi";
 import { GiFallingStar } from "react-icons/gi";
+import { genAI } from "@/lib/geminiApi";
 var randomstring = require("randomstring");
 
 export default function Home() {
@@ -92,9 +93,9 @@ export default function Home() {
     const input = prompt.trim();
     setPrompt("");
 
+    const notification = toast.loading("ChatGPT is thinking...");
+    let mId = randomString();
     try {
-      let mId = randomString();
-
       const message = {
         text: input,
         createdAt: serverTimestamp(),
@@ -120,12 +121,6 @@ export default function Home() {
       ).catch((err) => console.log("addDoc", err));
 
       //Toast
-      const notification = toast.loading("ChatGPT is thinking...");
-
-      const genAI = new GoogleGenerativeAI(
-        "AIzaSyCqbte8Mt26JRMRZt7xxZuPlxw_WKkQot4"
-      );
-
       const model = genAI.getGenerativeModel({ model: geminiModel });
 
       const result = await model.generateContentStream([input]);
@@ -208,8 +203,36 @@ export default function Home() {
           );
           console.log("Error2: ", err);
         });
-    } catch (err) {
-      console.log("Error2: ", err);
+    } catch (error) {
+      toast.error("Unexpected Error Occured", {
+        id: notification,
+      });
+
+      let msgData = {
+        text: error.errorDetails
+          ? "Error: " + error.errorDetails[0].reason
+          : "Sorry, an unexpected error occured. Please try again later.",
+        responded: true,
+        error: true,
+        createdAt: serverTimestamp(),
+        model: geminiModel,
+        user: {
+          id: "Gemini",
+        },
+      };
+
+      await setDoc(
+        doc(
+          db,
+          "users",
+          session?.user?.email,
+          "chats",
+          chatId,
+          "messages",
+          mId
+        ),
+        msgData
+      );
     }
   };
 
@@ -233,12 +256,6 @@ export default function Home() {
       .catch((err) => {
         console.log("err", err);
       });
-
-    // await createNewChat().then(async (id) => {
-    //   router.replace(`/chat/${id}`);
-    //   await sendMessage(id).then(() => {});
-    //   console.log(id);
-    // });
   };
 
   //Menu Functions
@@ -257,22 +274,8 @@ export default function Home() {
     }
   };
 
-  const closeMenu = () => {
-    const menu = document.getElementById("MENU_BAR");
-    const bg = document.getElementById("MENU_DARK_BACKGROUND");
-
-    if (menu.offsetWidth != 0) {
-      menu.classList.remove("md:w-[260px]", "w-[280px]");
-      menu.classList.remove("w-0");
-      bg.classList.add("hidden");
-      menu.style.width = "0px";
-      menu.style.visibility = "hidden";
-      setIsOpen(false);
-    }
-  };
-
   return (
-    <main className="w-full h-screen bg-[#212121] flex flex-col relative">
+    <main className="w-full h-full bg-[#212121] flex flex-col relative">
       <div className="w-full h-full flex flex-col relative">
         <div className="w-full h-full flex flex-col flex-1 relative overflow-y-auto ">
           <div className="w-full sticky top-0 left-0 px-4 py-2 items-center flex justify-between bg-[#212121] z-30">
@@ -758,11 +761,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <div
-        onClick={closeMenu}
-        id="MENU_DARK_BACKGROUND"
-        className="hidden md:hidden absolute top-0 left-0 w-full h-screen bg-black/70 z-30"
-      ></div>
     </main>
   );
 }

@@ -10,15 +10,12 @@ import {
 import { useSession } from "next-auth/react";
 import React, { useEffect, useRef, useState } from "react";
 import { BsQuestionCircle } from "react-icons/bs";
-import { FaArrowUp } from "react-icons/fa";
 import { db } from "../../firebase";
 import toast from "react-hot-toast";
-import { queryGemini } from "@/lib/gemini";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import moment from "moment";
-import { MdOutlineArrowUpward } from "react-icons/md";
 import { useSidebarContext } from "./SidebarContext";
-// import { genAI } from "@/lib/geminiApi";
+import { genAI } from "@/lib/geminiApi";
+
 var randomstring = require("randomstring");
 
 const useChatInput = ({ chatId, geminiModel }) => {
@@ -60,161 +57,202 @@ const useChatInput = ({ chatId, geminiModel }) => {
 
     let mId = randomString();
 
-    const message = {
-      text: input,
-      createdAt: serverTimestamp(),
-      user: {
-        _id: session?.user?.email,
-        name: session?.user?.name,
-        avatar:
-          session?.user?.image ||
-          `https://ui-avatars.com/api/?name=${session?.user?.name}`,
-      },
-    };
-
-    await addDoc(
-      collection(
-        db,
-        "users",
-        session?.user?.email,
-        "chats",
-        chatId,
-        "messages"
-      ),
-      message
-    );
-
-    //Toast
     const notification = toast.loading("ChatGPT is thinking...");
 
-    const genAI = new GoogleGenerativeAI(
-      "AIzaSyCqbte8Mt26JRMRZt7xxZuPlxw_WKkQot4"
-    );
-    // Choose a model that's appropriate for your use case.
-    const model = genAI.getGenerativeModel({ model: geminiModel });
-
-    //  queryGemini({ prompt, chatId, session })
-    //    .then(async (res) => {
-    //      toast.success("ChatGPT has responded!", {
-    //        id: notification,
-    //      });
-    //      await addDoc(
-    //        collection(
-    //          db,
-    //          "users",
-    //          session?.user?.email,
-    //          "chats",
-    //          chatId,
-    //          "messages"
-    //        ),
-    //        {
-    //          text: res,
-    //          createdAt: serverTimestamp(),
-    //          error: false,
-    //          user: {
-    //            id: "Gemini",
-    //          },
-    //        }
-    //      );
-    //    })
-    //    .catch(async (err) => {
-    //      toast.error("ChatGPT got an error!", {
-    //        id: notification,
-    //      });
-    //      await addDoc(
-    //        collection(
-    //          db,
-    //          "users",
-    //          session?.user?.email,
-    //          "chats",
-    //          chatId,
-    //          "messages"
-    //        ),
-    //        {
-    //          text: `${err}`,
-    //          createdAt: serverTimestamp(),
-    //          error: true,
-    //          user: {
-    //            id: "Gemini",
-    //          },
-    //        }
-    //      );
-    //      console.log(err);
-    //    });
-
-    const result = await model.generateContentStream([input]);
-
-    await setDoc(
-      doc(db, "users", session?.user?.email, "chats", chatId, "messages", mId),
-      {
-        text: "loading",
+    try {
+      const message = {
+        text: input,
         createdAt: serverTimestamp(),
-        error: false,
-        responded: false,
+        user: {
+          _id: session?.user?.email,
+          name: session?.user?.name,
+          avatar:
+            session?.user?.image ||
+            `https://ui-avatars.com/api/?name=${session?.user?.name}`,
+        },
+      };
+
+      await addDoc(
+        collection(
+          db,
+          "users",
+          session?.user?.email,
+          "chats",
+          chatId,
+          "messages"
+        ),
+        message
+      );
+
+      //Toast
+      const model = genAI.getGenerativeModel({ model: geminiModel });
+
+      //  queryGemini({ prompt, chatId, session })
+      //    .then(async (res) => {
+      //      toast.success("ChatGPT has responded!", {
+      //        id: notification,
+      //      });
+      //      await addDoc(
+      //        collection(
+      //          db,
+      //          "users",
+      //          session?.user?.email,
+      //          "chats",
+      //          chatId,
+      //          "messages"
+      //        ),
+      //        {
+      //          text: res,
+      //          createdAt: serverTimestamp(),
+      //          error: false,
+      //          user: {
+      //            id: "Gemini",
+      //          },
+      //        }
+      //      );
+      //    })
+      //    .catch(async (err) => {
+      //      toast.error("ChatGPT got an error!", {
+      //        id: notification,
+      //      });
+      //      await addDoc(
+      //        collection(
+      //          db,
+      //          "users",
+      //          session?.user?.email,
+      //          "chats",
+      //          chatId,
+      //          "messages"
+      //        ),
+      //        {
+      //          text: `${err}`,
+      //          createdAt: serverTimestamp(),
+      //          error: true,
+      //          user: {
+      //            id: "Gemini",
+      //          },
+      //        }
+      //      );
+      //      console.log(err);
+      //    });
+
+      const result = await model.generateContentStream([input]);
+
+      await setDoc(
+        doc(
+          db,
+          "users",
+          session?.user?.email,
+          "chats",
+          chatId,
+          "messages",
+          mId
+        ),
+        {
+          text: "loading",
+          createdAt: serverTimestamp(),
+          error: false,
+          responded: false,
+          model: geminiModel,
+          user: {
+            id: "Gemini",
+          },
+        }
+      );
+
+      for await (const chunk of result.stream) {
+        const chunkText = chunk.text();
+        setOutput(chunkText);
+        setTimeout(() => {
+          console.log(
+            chunkText,
+            moment(new Date().getTime()).format("hh:mm:ss")
+          );
+        });
+      }
+
+      result.response
+        .then(async (res) => {
+          toast.success("ChatGPT has responded!", {
+            id: notification,
+          });
+
+          let msgData = {
+            text: res.text(),
+            responded: true,
+          };
+
+          await updateDoc(
+            doc(
+              db,
+              "users",
+              session?.user?.email,
+              "chats",
+              chatId,
+              "messages",
+              mId
+            ),
+            msgData
+          );
+        })
+        .catch(async (err) => {
+          toast.error("ChatGPT got an error!", {
+            id: notification,
+          });
+
+          let msgData = {
+            text: err,
+            responded: true,
+            error: true,
+          };
+
+          await updateDoc(
+            doc(
+              db,
+              "users",
+              session?.user?.email,
+              "chats",
+              chatId,
+              "messages",
+              mId
+            ),
+            msgData
+          );
+          console.log(err);
+        });
+    } catch (error) {
+      toast.error("Unexpected Error Occured", {
+        id: notification,
+      });
+
+      let msgData = {
+        text: error.errorDetails
+          ? "Error: " + error.errorDetails[0].reason
+          : "Sorry, an unexpected error occured. Please try again later.",
+        responded: true,
+        error: true,
+        createdAt: serverTimestamp(),
         model: geminiModel,
         user: {
           id: "Gemini",
         },
-      }
-    );
+      };
 
-    for await (const chunk of result.stream) {
-      const chunkText = chunk.text();
-      setOutput(chunkText);
-      setTimeout(() => {
-        console.log(chunkText, moment(new Date().getTime()).format("hh:mm:ss"));
-      });
+      await setDoc(
+        doc(
+          db,
+          "users",
+          session?.user?.email,
+          "chats",
+          chatId,
+          "messages",
+          mId
+        ),
+        msgData
+      );
+
+      console.log({ ...error });
     }
-
-    result.response
-      .then(async (res) => {
-        toast.success("ChatGPT has responded!", {
-          id: notification,
-        });
-
-        let msgData = {
-          text: res.text(),
-          responded: true,
-        };
-
-        await updateDoc(
-          doc(
-            db,
-            "users",
-            session?.user?.email,
-            "chats",
-            chatId,
-            "messages",
-            mId
-          ),
-          msgData
-        );
-      })
-      .catch(async (err) => {
-        toast.error("ChatGPT got an error!", {
-          id: notification,
-        });
-
-        let msgData = {
-          text: err,
-          responded: true,
-          error: true,
-        };
-
-        await updateDoc(
-          doc(
-            db,
-            "users",
-            session?.user?.email,
-            "chats",
-            chatId,
-            "messages",
-            mId
-          ),
-          msgData
-        );
-        console.log(err);
-      });
   };
 
   return {

@@ -7,6 +7,7 @@ import Login from "@/components/Login";
 import { authOptions } from "@/lib/authOptions";
 import ClientProvider from "@/components/ClientProvider";
 import { SidebarWrapper } from "@/components/SidebarContext";
+import BgCloseComp from "@/components/BgCloseComp";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,22 +20,23 @@ export default async function RootLayout({ children }) {
   const session = await getServerSession(authOptions);
   return (
     <html lang="en" className="dark">
-      <body className={inter.className}>
-        <div className="relative w-full h-full max-w-full overflow-hidden">
-          <SessionProvider session={session}>
-            {!session ? (
-              <Login />
-            ) : (
-              <div className="relative flex w-full h-full">
-                <SidebarWrapper>
-                  <Sidebar />
-                  <ClientProvider />
-                  <div className="w-full flex-1 transition">{children}</div>
-                </SidebarWrapper>
-              </div>
-            )}
-          </SessionProvider>
-        </div>
+      <body
+        className={`relative flex h-full w-full m-0 p-0 ${inter.className}`}
+      >
+        <SessionProvider session={session}>
+          {!session ? (
+            <Login />
+          ) : (
+            <div className="relative flex w-full h-[100dvh] overflow-hidden ">
+              <SidebarWrapper>
+                <Sidebar />
+                <ClientProvider />
+                <div className="w-full  transition">{children}</div>
+                <BgCloseComp />
+              </SidebarWrapper>
+            </div>
+          )}
+        </SessionProvider>
       </body>
     </html>
   );

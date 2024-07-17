@@ -10,6 +10,7 @@ const NewChat = () => {
   const { data: session } = useSession();
   const router = useRouter();
   const { isQuota } = useSidebarContext();
+  const { setIsOpen } = useSidebarContext();
 
   const createNewChat = async () => {
     if (isQuota) {
@@ -23,7 +24,22 @@ const NewChat = () => {
         createdAt: serverTimestamp(),
       }
     );
+    closeMenu();
     router.push(`/chat/${doc.id}`);
+  };
+
+  const closeMenu = () => {
+    const menu = document.getElementById("MENU_BAR");
+    const bg = document.getElementById("MENU_DARK_BACKGROUND");
+
+    if (menu.offsetWidth != 0 && window.innerWidth < 768) {
+      menu.classList.remove("md:w-[260px]", "w-[280px]");
+      menu.classList.remove("w-0");
+      bg.classList.add("hidden");
+      menu.style.width = "0px";
+      menu.style.visibility = "hidden";
+      setIsOpen(false);
+    }
   };
 
   return (

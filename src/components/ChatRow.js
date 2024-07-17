@@ -102,6 +102,8 @@ const ChatRow = ({ id, ts }) => {
               <div className="h-1 w-1 bg-[#686868] rounded-full animate-bounce [animation-delay:-0.15s]"></div>
               <div className="h-1 w-1 bg-[#686868] rounded-full animate-bounce"></div>
             </div>
+          ) : loading ? (
+            ""
           ) : (
             removeMarkdown(
               messages?.docs?.[messages?.docs?.length - 1]?.data().text

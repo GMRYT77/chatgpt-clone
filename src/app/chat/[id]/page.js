@@ -66,13 +66,13 @@ const page = ({ params: { id } }) => {
   };
 
   return (
-    <main className="w-full h-[100vh] bg-[#212121]">
+    <main className="w-full h-[100dvh] bg-[#212121]">
       <div className="w-full h-full flex flex-col justify-between relative overflow-y-auto ">
-        <div
-          onClick={openMenu}
-          className="w-full sticky top-0 left-0 px-4 py-2 items-center flex justify-between bg-[#212121] z-30"
-        >
-          <button className="w-5 h-6 md:hidden flex flex-col justify-evenly">
+        <div className="w-full sticky top-0 left-0 px-4 py-2 items-center flex justify-between bg-[#212121] z-30">
+          <button
+            onClick={openMenu}
+            className="w-5 h-6 md:hidden flex flex-col justify-evenly"
+          >
             <span className="w-5 h-0.5 rounded-full bg-gray-300"></span>
             <span className="w-3 h-0.5 rounded-full bg-gray-300"></span>
           </button>
@@ -363,12 +363,6 @@ const page = ({ params: { id } }) => {
         <Chat chatId={id} promptOutput={promptOutput} />
         {render}
       </div>
-
-      <div
-        onClick={closeMenu}
-        id="MENU_DARK_BACKGROUND"
-        className="hidden md:hidden absolute top-0 left-0 w-full h-screen bg-black/70 z-30"
-      ></div>
     </main>
   );
 };
