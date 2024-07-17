@@ -21,6 +21,7 @@ var randomstring = require("randomstring");
 const useChatInput = ({ chatId, geminiModel }) => {
   const { data: session } = useSession();
   const [prompt, setPrompt] = useState("");
+  const [promptLoading, setPromptLoading] = useState(false);
   const [output, setOutput] = useState("");
   const textareaRef = useRef(null);
   const { isQuota, setIsQuota } = useSidebarContext();
@@ -58,7 +59,7 @@ const useChatInput = ({ chatId, geminiModel }) => {
     let mId = randomString();
 
     const notification = toast.loading("ChatGPT is thinking...");
-
+    setPromptLoading(true);
     try {
       const message = {
         text: input,
@@ -177,6 +178,8 @@ const useChatInput = ({ chatId, geminiModel }) => {
             id: notification,
           });
 
+          setPromptLoading(false);
+
           let msgData = {
             text: res.text(),
             responded: true,
@@ -199,6 +202,8 @@ const useChatInput = ({ chatId, geminiModel }) => {
           toast.error("ChatGPT got an error!", {
             id: notification,
           });
+
+          setPromptLoading(false);
 
           let msgData = {
             text: err,
@@ -224,6 +229,7 @@ const useChatInput = ({ chatId, geminiModel }) => {
       toast.error("Unexpected Error Occured", {
         id: notification,
       });
+      setPromptLoading(false);
 
       let msgData = {
         text: error.errorDetails
@@ -260,10 +266,7 @@ const useChatInput = ({ chatId, geminiModel }) => {
     promptOutput: output,
     render: (
       <div className="w-full px-4 flex flex-col items-center sticky z-20 bottom-0 left-0">
-        <form
-          onSubmit={sendMessage}
-          className="w-full max-w-screen-md mx-auto relative rounded-[24px] bg-[#2f2f2f] flex items-end gap-2 pl-4 pr-2 py-2"
-        >
+        <form className="w-full max-w-screen-md mx-auto relative rounded-[24px] bg-[#2f2f2f] flex items-end gap-2 pl-4 pr-2 py-2">
           <div className="flex-1 flex items-center py-1">
             <textarea
               ref={textareaRef}
@@ -286,25 +289,29 @@ const useChatInput = ({ chatId, geminiModel }) => {
             />
           </div>
           <button
-            type="submit"
-            disabled={!prompt || !session}
+            onClick={sendMessage}
+            disabled={!prompt || !session || promptLoading}
             className=" disabled:bg-gray-500 disabled:cursor-not-allowed disabled:text-neutral-700 w-8 h-8 rounded-full bg-neutral-300 hover:bg-gray-400 text-neutral-900  flex items-center justify-center text-lg"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="32"
-              height="32"
-              fill="none"
-              viewBox="0 0 32 32"
-              className="icon-2xl"
-            >
-              <path
-                fill="currentColor"
-                fillRule="evenodd"
-                d="M15.192 8.906a1.143 1.143 0 0 1 1.616 0l5.143 5.143a1.143 1.143 0 0 1-1.616 1.616l-3.192-3.192v9.813a1.143 1.143 0 0 1-2.286 0v-9.813l-3.192 3.192a1.143 1.143 0 1 1-1.616-1.616z"
-                clipRule="evenodd"
-              ></path>
-            </svg>
+            {promptLoading ? (
+              <div className="w-3 h-3 rounded-sm bg-neutral-800 animate-pulse"></div>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="32"
+                height="32"
+                fill="none"
+                viewBox="0 0 32 32"
+                className="icon-2xl"
+              >
+                <path
+                  fill="currentColor"
+                  fillRule="evenodd"
+                  d="M15.192 8.906a1.143 1.143 0 0 1 1.616 0l5.143 5.143a1.143 1.143 0 0 1-1.616 1.616l-3.192-3.192v9.813a1.143 1.143 0 0 1-2.286 0v-9.813l-3.192 3.192a1.143 1.143 0 1 1-1.616-1.616z"
+                  clipRule="evenodd"
+                ></path>
+              </svg>
+            )}
           </button>
         </form>
         <div className="text-neutral-400 text-xs relative w-full text-center bg-[#212121] py-2">

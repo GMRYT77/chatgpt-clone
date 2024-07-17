@@ -60,7 +60,6 @@ const ChatRow = ({ id, ts }) => {
       setSidebarTs((e) => ({ ...e, [ts]: true }));
     }
     setLoaded(true);
-    console.log(sidebarTs[ts]);
   }, [loaded]);
 
   const closeMenu = () => {

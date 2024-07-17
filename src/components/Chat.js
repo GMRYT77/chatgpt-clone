@@ -329,7 +329,6 @@ const Chat = ({ chatId, promptOutput }) => {
                     endRef={messagesEndRef}
                     model={e?.data().model}
                   />
-                  <div className="absolute -bottom-4 mt-20" />
                 </div>
               );
             } else {
